@@ -21,6 +21,31 @@
     <input type="hidden" id="ping-csrf-token" value="{{ csrf_token('ping') }}">
 </div>
 
+<div class="example-wrapper">
+    <h2>Secrets demo (native actions, plan 029)</h2>
+    <p>
+        <label>Key <input type="text" id="secrets-key" value="openai"></label>
+        <label>Value <input type="text" id="secrets-value" value="sk-test"></label>
+    </p>
+    <input type="hidden" id="secrets-csrf-token" value="{{ csrf_token('secrets_bridge') }}">
+    <p>
+        Bridge (PHP -&gt; HTTP -&gt; keyring):
+        <button type="button" data-bridge="set">set</button>
+        <button type="button" data-bridge="has">has</button>
+        <button type="button" data-bridge="get">get</button>
+        <button type="button" data-bridge="delete">delete</button>
+        <span id="bridge-result">idle</span>
+    </p>
+    <p>
+        IPC (WebView -&gt; Tauri invoke() -&gt; keyring):
+        <button type="button" data-ipc="set">set</button>
+        <button type="button" data-ipc="has">has</button>
+        <button type="button" data-ipc="get">get</button>
+        <button type="button" data-ipc="delete">delete</button>
+        <span id="ipc-result">idle</span>
+    </p>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -55,6 +80,48 @@
         const data = await response.json();
         expectedCorrelationId = data.correlationId;
         status.textContent = `dispatched (correlation ${data.correlationId}), waiting for completion…`;
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const keyEl = document.getElementById('secrets-key');
+    const valueEl = document.getElementById('secrets-value');
+    const csrfTokenField = document.getElementById('secrets-csrf-token');
+    const bridgeResult = document.getElementById('bridge-result');
+    const ipcResult = document.getElementById('ipc-result');
+    const invoke = window.__TAURI__?.core?.invoke;
+
+    document.querySelectorAll('[data-bridge]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const action = button.dataset.bridge;
+            const body = new URLSearchParams();
+            body.set('_csrf_token', csrfTokenField.value);
+            body.set('key', keyEl.value);
+            if (action === 'set') {
+                body.set('value', valueEl.value);
+            }
+            const response = await fetch(`/secrets/bridge/${action}`, { method: 'POST', body });
+            bridgeResult.textContent = `${action}: ${response.status} ${JSON.stringify(await response.json())}`;
+        });
+    });
+
+    document.querySelectorAll('[data-ipc]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const action = button.dataset.ipc;
+            if (!invoke) {
+                ipcResult.textContent = `${action}: invoke() not available (withGlobalTauri off, or opened outside Tauri)`;
+                return;
+            }
+            try {
+                const args = action === 'set' ? { key: keyEl.value, value: valueEl.value } : { key: keyEl.value };
+                const data = await invoke(`secret_${action}`, args);
+                ipcResult.textContent = `${action}: ok ${JSON.stringify(data)}`;
+            } catch (error) {
+                ipcResult.textContent = `${action}: refused (${error})`;
+            }
+        });
     });
 })();
 </script>
