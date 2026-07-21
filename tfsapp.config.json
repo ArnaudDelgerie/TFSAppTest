@@ -25,5 +25,12 @@
       "composer install"
     ]
   },
-  "releases_repo": "ArnaudDelgerie/TFSAppTest-releases"
+  "releases_repo": "ArnaudDelgerie/TFSAppTest-releases",
+  "actions": {
+    "secrets": {
+      "ipc": true,
+      "bridge": true,
+      "keys": ["openai", "anthropic"]
+    }
+  }
 }
