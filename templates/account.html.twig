@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Account{% endblock %}
+
+{% block body %}
+<div class="example-wrapper">
+    <h1>Logged in as {{ app.user.userIdentifier }}</h1>
+    <p><a href="{{ path('app_logout') }}">Logout</a></p>
+    <p><a href="{{ path('tfs_app') }}">Back to index</a></p>
+</div>
+{% endblock %}

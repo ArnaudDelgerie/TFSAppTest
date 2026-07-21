@@ -1,0 +1,29 @@
+{
+  "product_name": "TFS App Test",
+  "identifier": "dev.local.tfsapp-test",
+  "project_name": "tfsapp-test",
+  "app_version": "0.5.4",
+  "commands": {
+    "pre-install": [
+      "doctrine:migrations:migrate --no-interaction"
+    ],
+    "post-install": [
+      "about"
+    ],
+    "pre-update": [
+      "doctrine:migrations:migrate --no-interaction"
+    ],
+    "post-update": [
+      "about"
+    ],
+    "pre-build": [
+      "composer install --no-dev --no-scripts --optimize-autoloader",
+      "php bin/console cache:clear --env=prod --no-debug",
+      "php bin/console cache:warmup --env=prod --no-debug"
+    ],
+    "post-build": [
+      "composer install"
+    ]
+  },
+  "releases_repo": "ArnaudDelgerie/TFSAppTest-releases"
+}
