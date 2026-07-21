@@ -11,5 +11,51 @@
 <div class="example-wrapper">
     <h1>Born to be a TFSApp</h1>
     <p><a href="{{ path('account') }}">Account</a></p>
+
+    <p>Async worker mode: <strong id="async-worker-mode">{{ async_worker_mode ? 'ON — Messenger worker consumes "async" in the background' : 'OFF — sync:// runs the handler inline on dispatch' }}</strong></p>
+
+    <p>
+        <button type="button" id="ping-button">Trigger background job</button>
+        <span id="ping-status">idle</span>
+    </p>
+    <input type="hidden" id="ping-csrf-token" value="{{ csrf_token('ping') }}">
 </div>
+
+<script>
+(() => {
+    const button = document.getElementById('ping-button');
+    const status = document.getElementById('ping-status');
+    const csrfTokenField = document.getElementById('ping-csrf-token');
+    const mercurePublicUrl = {{ mercure_public_url|json_encode|raw }};
+    const topic = {{ ping_topic|json_encode|raw }};
+    let expectedCorrelationId = null;
+
+    if (mercurePublicUrl) {
+        const url = new URL(mercurePublicUrl);
+        url.searchParams.append('topic', topic);
+        const source = new EventSource(url);
+        source.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.correlationId !== expectedCorrelationId) {
+                return;
+            }
+            status.textContent = `done: "${data.text}" (completed ${data.completedAt})`;
+        };
+    }
+
+    button.addEventListener('click', async () => {
+        status.textContent = 'dispatching…';
+        const body = new URLSearchParams();
+        body.set('_csrf_token', csrfTokenField.value);
+        const response = await fetch('{{ path('ping') }}', { method: 'POST', body });
+        if (!response.ok) {
+            status.textContent = 'dispatch failed';
+            return;
+        }
+        const data = await response.json();
+        expectedCorrelationId = data.correlationId;
+        status.textContent = `dispatched (correlation ${data.correlationId}), waiting for completion…`;
+    });
+})();
+</script>
 {% endblock %}
