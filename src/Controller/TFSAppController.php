@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Message\PingMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Authorization;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
@@ -13,8 +15,14 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 final class TFSAppController extends AbstractController
 {
     #[Route('/', name: 'tfs_app')]
-    public function index(): Response
+    public function index(Request $request, Authorization $authorization): Response
     {
+        // The hub no longer accepts anonymous subscriptions (station plan
+        // 033): mint a same-origin mercureAuthorization cookie scoped to
+        // the demo topic on every page load, or the EventSource below gets
+        // a 401 on subscribe.
+        $authorization->setCookie($request, [PingMessage::TOPIC]);
+
         return $this->render('index.html.twig', [
             // Lets a tester see which mode the running instance is in
             // without guessing from dispatch timing alone (plan 028,

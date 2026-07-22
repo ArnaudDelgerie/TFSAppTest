@@ -54,17 +54,26 @@
     const mercurePublicUrl = {{ mercure_public_url|json_encode|raw }};
     const topic = {{ ping_topic|json_encode|raw }};
     let expectedCorrelationId = null;
+    // Sync-mode dispatch publishes the Mercure update *before* /ping's own
+    // JSON response comes back (station plan 033 step 2 finding), so the
+    // push can land before the click handler below even knows which
+    // correlationId to expect. Buffer every push by id so a push that
+    // arrives first is still found once the id becomes known, instead of
+    // the click handler's own status write clobbering it.
+    const receivedByCorrelationId = new Map();
 
     if (mercurePublicUrl) {
         const url = new URL(mercurePublicUrl);
         url.searchParams.append('topic', topic);
-        const source = new EventSource(url);
+        // withCredentials is required for the mercureAuthorization cookie to
+        // be sent, even same-origin — it defaults to false per spec.
+        const source = new EventSource(url, {withCredentials: true});
         source.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            if (data.correlationId !== expectedCorrelationId) {
-                return;
+            receivedByCorrelationId.set(data.correlationId, data);
+            if (data.correlationId === expectedCorrelationId) {
+                status.textContent = `done: "${data.text}" (completed ${data.completedAt})`;
             }
-            status.textContent = `done: "${data.text}" (completed ${data.completedAt})`;
         };
     }
 
@@ -79,7 +88,12 @@
         }
         const data = await response.json();
         expectedCorrelationId = data.correlationId;
-        status.textContent = `dispatched (correlation ${data.correlationId}), waiting for completion…`;
+        const already = receivedByCorrelationId.get(expectedCorrelationId);
+        if (already) {
+            status.textContent = `done: "${already.text}" (completed ${already.completedAt})`;
+        } else {
+            status.textContent = `dispatched (correlation ${data.correlationId}), waiting for completion…`;
+        }
     });
 })();
 </script>
