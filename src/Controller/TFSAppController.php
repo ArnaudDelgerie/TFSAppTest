@@ -61,4 +61,20 @@ final class TFSAppController extends AbstractController
 
         return $this->json(['correlationId' => $correlationId]);
     }
+
+    /**
+     * Fixture for the station's plan 034 step 3: the station's default
+     * Content-Security-Policy is set with Caddy's `?` form (build/Caddyfile.desktop),
+     * which only sets a header the response doesn't already carry. This route
+     * emits its own, deliberately different policy to confirm the station's
+     * default steps aside instead of appearing alongside it.
+     */
+    #[Route('/csp-override-demo', name: 'csp_override_demo')]
+    public function cspOverrideDemo(): Response
+    {
+        $response = new Response('CSP override demo');
+        $response->headers->set('Content-Security-Policy', "default-src 'none'");
+
+        return $response;
+    }
 }
