@@ -46,6 +46,20 @@
     </p>
 </div>
 
+<div class="example-wrapper">
+    <h2>Check for updates (native actions, plan 035)</h2>
+    <p>
+        Bridge (PHP -&gt; HTTP -&gt; GitHub):
+        <button type="button" id="update-bridge-button">check</button>
+    </p>
+    <div id="update-bridge-result">idle</div>
+    <p>
+        IPC (WebView -&gt; Tauri invoke() -&gt; GitHub):
+        <button type="button" id="update-ipc-button">check</button>
+    </p>
+    <div id="update-ipc-result">idle</div>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -136,6 +150,57 @@
                 ipcResult.textContent = `${action}: refused (${error})`;
             }
         });
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const bridgeButton = document.getElementById('update-bridge-button');
+    const ipcButton = document.getElementById('update-ipc-button');
+    const bridgeResult = document.getElementById('update-bridge-result');
+    const ipcResult = document.getElementById('update-ipc-result');
+    const invoke = window.__TAURI__?.core?.invoke;
+
+    // Shared by both transports: CONTRACT.md's result shape is identical
+    // whichever one answered, so there is exactly one renderer, not two.
+    function renderUpdateResult(el, data) {
+        if (data.status === 'unavailable') {
+            el.textContent = `unavailable (${data.reason})`;
+            return;
+        }
+        const headline = data.update_available
+            ? `update available: ${data.current} -> ${data.latest}`
+            : `up to date (running ${data.current}, latest published ${data.latest})`;
+        el.innerHTML = `<p>${headline}</p>`
+            + `<p><a href="${data.release_url}" target="_blank" rel="noopener">${data.release_url}</a></p>`
+            + `<p>asset: ${data.asset.name} (${data.asset.size} bytes)</p>`
+            + `<pre>${data.notes}</pre>`;
+    }
+
+    bridgeButton.addEventListener('click', async () => {
+        bridgeResult.textContent = 'checking…';
+        const response = await fetch('/update/bridge');
+        const data = await response.json();
+        if (data.available === false) {
+            bridgeResult.textContent = 'bridge not available (actions.update.bridge is off)';
+            return;
+        }
+        renderUpdateResult(bridgeResult, data);
+    });
+
+    ipcButton.addEventListener('click', async () => {
+        if (!invoke) {
+            ipcResult.textContent = 'invoke() not available (withGlobalTauri off, or opened outside Tauri)';
+            return;
+        }
+        ipcResult.textContent = 'checking…';
+        try {
+            const data = await invoke('update_check');
+            renderUpdateResult(ipcResult, data);
+        } catch (error) {
+            ipcResult.textContent = `refused (${error})`;
+        }
     });
 })();
 </script>

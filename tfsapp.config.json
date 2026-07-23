@@ -31,6 +31,10 @@
       "ipc": true,
       "bridge": true,
       "keys": ["openai", "anthropic"]
+    },
+    "update": {
+      "ipc": true,
+      "bridge": true
     }
   }
 }
