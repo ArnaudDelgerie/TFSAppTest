@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.6
+
+Validation entry for the station's plan 035 — the "update available"
+case: a v0.5.5 install should detect this release.
+
 ## 0.5.5
 
 Adds the "Check for updates" demo fixture for the station's plan 035
