@@ -28,11 +28,11 @@
   "releases_repo": "ArnaudDelgerie/TFSAppTest-releases",
   "run": {
     "mcp-serve": {
-      "command": "about",
+      "command": "app:run:mcp-serve",
       "concurrent": true
     },
     "cleanup": {
-      "command": "about",
+      "command": "app:run:cleanup",
       "concurrent": false
     }
   },
