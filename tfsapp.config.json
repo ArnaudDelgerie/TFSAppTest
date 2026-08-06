@@ -2,7 +2,7 @@
   "product_name": "TFS App Test",
   "identifier": "dev.local.tfsapp-test",
   "project_name": "tfsapp-test",
-  "app_version": "0.5.9",
+  "app_version": "0.6.0",
   "commands": {
     "pre-install": [
       "doctrine:migrations:migrate --no-interaction"

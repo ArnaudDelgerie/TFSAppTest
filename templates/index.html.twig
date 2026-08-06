@@ -60,6 +60,16 @@
     <div id="update-ipc-result">idle</div>
 </div>
 
+<div class="example-wrapper">
+    <h2>File upload demo (native drag-and-drop, station plan 059)</h2>
+    <p>Drag a file from the file manager onto the field below, or click it to pick one.</p>
+    <p>
+        <label>File <input type="file" id="upload-file"></label>
+    </p>
+    <input type="hidden" id="upload-csrf-token" value="{{ csrf_token('upload') }}">
+    <div id="upload-result">idle</div>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -201,6 +211,37 @@
         } catch (error) {
             ipcResult.textContent = `refused (${error})`;
         }
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const fileInput = document.getElementById('upload-file');
+    const csrfTokenField = document.getElementById('upload-csrf-token');
+    const result = document.getElementById('upload-result');
+
+    // Fires on both click-to-select and a real OS drop onto the input —
+    // that's exactly what plan 059 disabled Tauri's native drag-drop
+    // handler for: without the fix, a drop never reaches this listener at
+    // all (Wry swallows it before the DOM sees anything).
+    fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            result.textContent = 'idle';
+            return;
+        }
+        result.textContent = `uploading ${file.name}…`;
+        const body = new FormData();
+        body.set('_csrf_token', csrfTokenField.value);
+        body.set('file', file);
+        const response = await fetch('{{ path('upload') }}', { method: 'POST', body });
+        if (!response.ok) {
+            result.textContent = `upload failed (${response.status})`;
+            return;
+        }
+        const data = await response.json();
+        result.textContent = `received "${data.filename}" (${data.size} bytes)`;
     });
 })();
 </script>

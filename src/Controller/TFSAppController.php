@@ -63,6 +63,27 @@ final class TFSAppController extends AbstractController
     }
 
     /**
+     * Fixture for the station's plan 059 validation: reports back the
+     * filename and byte size Symfony actually received, so a manual tester
+     * dragging a file from the file manager (or picking one through the
+     * WebKit file chooser) can see whether the upload really went through.
+     */
+    #[Route('/upload', name: 'upload', methods: ['POST'])]
+    #[IsCsrfTokenValid('upload', tokenKey: '_csrf_token')]
+    public function upload(Request $request): JsonResponse
+    {
+        $file = $request->files->get('file');
+        if (!$file) {
+            return $this->json(['error' => 'no file received'], 400);
+        }
+
+        return $this->json([
+            'filename' => $file->getClientOriginalName(),
+            'size' => $file->getSize(),
+        ]);
+    }
+
+    /**
      * Fixture for the station's plan 034 step 3: the station's default
      * Content-Security-Policy is set with Caddy's `?` form (build/Caddyfile.desktop),
      * which only sets a header the response doesn't already carry. This route
