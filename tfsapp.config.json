@@ -3,6 +3,7 @@
   "identifier": "dev.local.tfsapp-test",
   "project_name": "tfsapp-test",
   "app_version": "0.6.0",
+  "async_worker": true,
   "commands": {
     "pre-install": [
       "doctrine:migrations:migrate --no-interaction"
@@ -33,6 +34,10 @@
     },
     "cleanup": {
       "command": "app:run:cleanup",
+      "concurrent": false
+    },
+    "spawn-child": {
+      "command": "app:run:spawn-child",
       "concurrent": false
     }
   },
