@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+Validation entry for the hub's plan 018 (remote sources — install and update
+from a published release) — a v0.6.0 install from
+`github:ArnaudDelgerie/TFSAppTest-releases` updated to this release should
+move `app_version` to 0.6.1, follow the new tag, and still roll back to 0.6.0
+with `tfsapp-hub rollback`.
+
 ## 0.6.0
 
 Validation entry for the station's plan 057 (`run --stop` / `run --replace`) —
