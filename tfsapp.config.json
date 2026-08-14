@@ -53,6 +53,9 @@
     "update": {
       "ipc": true,
       "bridge": true
+    },
+    "picker": {
+      "ipc": true
     }
   }
 }

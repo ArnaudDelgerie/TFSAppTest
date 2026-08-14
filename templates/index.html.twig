@@ -70,6 +70,16 @@
     <div id="upload-result">idle</div>
 </div>
 
+<div class="example-wrapper">
+    <h2>Native path picker (hub plan 038)</h2>
+    <p>This IPC-only probe returns a selected absolute path; it does not upload or read it.</p>
+    <p>
+        <button type="button" data-picker="file">Pick file</button>
+        <button type="button" data-picker="directory">Pick directory</button>
+        <span id="picker-result">idle</span>
+    </p>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -211,6 +221,30 @@
         } catch (error) {
             ipcResult.textContent = `refused (${error})`;
         }
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const result = document.getElementById('picker-result');
+    const invoke = window.__TAURI__?.core?.invoke;
+
+    document.querySelectorAll('[data-picker]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const kind = button.dataset.picker;
+            if (!invoke) {
+                result.textContent = `${kind}: invoke() not available (withGlobalTauri off, or opened outside Tauri)`;
+                return;
+            }
+            result.textContent = `${kind}: choosing…`;
+            try {
+                const path = await invoke('pick_path', {kind});
+                result.textContent = `${kind}: ${JSON.stringify(path)}`;
+            } catch (error) {
+                result.textContent = `${kind}: refused (${error})`;
+            }
+        });
     });
 })();
 </script>
