@@ -3,7 +3,10 @@
   "identifier": "dev.local.tfsapp-test",
   "project_name": "tfsapp-test",
   "app_version": "0.6.1",
-  "async_worker": true,
+  "workers": [
+    { "transports": ["courant", "planifie", "fond"] },
+    { "transports": ["urgent"] }
+  ],
   "commands": {
     "pre-install": [
       "doctrine:migrations:migrate --no-interaction"

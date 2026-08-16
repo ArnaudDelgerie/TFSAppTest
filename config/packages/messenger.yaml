@@ -4,8 +4,37 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
+            # Kept for the async_worker: true compatibility control (hub plan
+            # 045 step 5) — unused while tfsapp.config.json declares
+            # "workers", since nothing routes here and no worker consumes it.
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            # Hub plan 045: four transports over two declared workers
+            # (["courant", "planifie", "fond"] and ["urgent"]). Each carries
+            # its own queue_name, since the injected DSN is now bare
+            # doctrine://default with no queue_name override — the app owns
+            # per-transport queues instead of them all colliding on the
+            # driver's default "default" queue.
+            courant:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%?queue_name=courant'
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            planifie:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%?queue_name=planifie'
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            fond:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%?queue_name=fond'
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            urgent:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%?queue_name=urgent'
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
@@ -18,9 +47,9 @@ framework:
             messenger.bus.default: []
 
         routing:
-            Symfony\Component\Mailer\Messenger\SendEmailMessage: async
-            Symfony\Component\Notifier\Message\ChatMessage: async
-            Symfony\Component\Notifier\Message\SmsMessage: async
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: courant
+            Symfony\Component\Notifier\Message\ChatMessage: courant
+            Symfony\Component\Notifier\Message\SmsMessage: courant
 
             # Route your messages to the transports
-            App\Message\PingMessage: async
+            App\Message\PingMessage: courant

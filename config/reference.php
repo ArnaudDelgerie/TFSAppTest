@@ -1460,6 +1460,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     generate_final_classes?: bool|Param, // Default: true
  *     generate_final_entities?: bool|Param, // Default: false
  * }
+ * @psalm-type TfsAppConfig = array{
+ *     twig_globals?: bool|Param, // Default: true
+ *     sqlite_pragmas?: bool|Param, // Default: true
+ * }
  * @psalm-type MercureConfig = array{
  *     hubs?: array<string, array{ // Default: []
  *         url?: scalar|Param|null, // URL of the hub's publish endpoint
@@ -1492,6 +1496,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     twig_extra?: TwigExtraConfig,
  *     security?: SecurityConfig,
  *     monolog?: MonologConfig,
+ *     tfs_app?: TfsAppConfig,
  *     mercure?: MercureConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
@@ -1507,6 +1512,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         maker?: MakerConfig,
+ *         tfs_app?: TfsAppConfig,
  *         mercure?: MercureConfig,
  *     },
  *     "when@prod"?: array{
@@ -1520,6 +1526,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
+ *         tfs_app?: TfsAppConfig,
  *         mercure?: MercureConfig,
  *     },
  *     "when@test"?: array{
@@ -1534,6 +1541,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
+ *         tfs_app?: TfsAppConfig,
  *         mercure?: MercureConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
