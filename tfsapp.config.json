@@ -2,7 +2,7 @@
   "product_name": "TFS App Test",
   "identifier": "dev.local.tfsapp-test",
   "project_name": "tfsapp-test",
-  "app_version": "0.6.1",
+  "app_version": "0.7.0",
   "workers": [
     { "transports": ["courant", "planifie", "fond"] },
     { "transports": ["urgent"] }

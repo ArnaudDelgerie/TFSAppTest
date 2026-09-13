@@ -71,6 +71,17 @@
 </div>
 
 <div class="example-wrapper">
+    <h2>Durable file (hub plan 049)</h2>
+    <p>Written under APP_UPLOAD_DIR — should survive an update, a rollback, and an export/import round trip.</p>
+    <p>
+        <label>File <input type="file" id="durable-file"></label>
+        <button type="button" id="durable-upload-button">Upload</button>
+    </p>
+    <input type="hidden" id="durable-csrf-token" value="{{ csrf_token('durable_upload') }}">
+    <div id="durable-result">idle</div>
+</div>
+
+<div class="example-wrapper">
     <h2>Native path picker (hub plan 038)</h2>
     <p>This IPC-only probe returns a selected absolute path; it does not upload or read it.</p>
     <p>
@@ -245,6 +256,35 @@
                 result.textContent = `${kind}: refused (${error})`;
             }
         });
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const fileInput = document.getElementById('durable-file');
+    const uploadButton = document.getElementById('durable-upload-button');
+    const csrfTokenField = document.getElementById('durable-csrf-token');
+    const result = document.getElementById('durable-result');
+
+    uploadButton.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            result.textContent = 'pick a file first';
+            return;
+        }
+        result.textContent = `uploading ${file.name}…`;
+        const body = new FormData();
+        body.set('_csrf_token', csrfTokenField.value);
+        body.set('file', file);
+        const response = await fetch('{{ path('durable_upload') }}', { method: 'POST', body });
+        if (!response.ok) {
+            result.textContent = `upload failed (${response.status})`;
+            return;
+        }
+        const data = await response.json();
+        const downloadUrl = `/durable-upload/${encodeURIComponent(data.filename)}`;
+        result.innerHTML = `stored as "${data.filename}" — <a href="${downloadUrl}">download it back</a>`;
     });
 })();
 </script>
