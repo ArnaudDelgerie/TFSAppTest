@@ -82,12 +82,22 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Native path picker (hub plan 038)</h2>
+    <h2>Native path picker &amp; save dialog (hub plans 038, 051)</h2>
     <p>This IPC-only probe returns a selected absolute path; it does not upload or read it.</p>
     <p>
         <button type="button" data-picker="file">Pick file</button>
         <button type="button" data-picker="directory">Pick directory</button>
         <span id="picker-result">idle</span>
+    </p>
+    <p>The hub never writes: a chosen save path is posted to a crude fixture route that writes a fixed string with <code>file_put_contents</code>.</p>
+    <input type="hidden" id="save-csrf-token" value="{{ csrf_token('save_path_write') }}">
+    <p>
+        <button type="button" id="save-path-button">Save As… (Markdown/Text, notes.md)</button>
+        <span id="save-path-result">idle</span>
+    </p>
+    <p>
+        <button type="button" id="save-path-relative-button">Save As with a relative directory (should refuse)</button>
+        <span id="save-path-relative-result">idle</span>
     </p>
 </div>
 
@@ -256,6 +266,61 @@
                 result.textContent = `${kind}: refused (${error})`;
             }
         });
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const csrfTokenField = document.getElementById('save-csrf-token');
+    const result = document.getElementById('save-path-result');
+    const relativeResult = document.getElementById('save-path-relative-result');
+    const invoke = window.__TAURI__?.core?.invoke;
+
+    document.getElementById('save-path-button').addEventListener('click', async () => {
+        if (!invoke) {
+            result.textContent = 'invoke() not available (withGlobalTauri off, or opened outside Tauri)';
+            return;
+        }
+        result.textContent = 'choosing…';
+        try {
+            const path = await invoke('save_path', {
+                filters: [
+                    {name: 'Markdown', extensions: ['md']},
+                    {name: 'Text', extensions: ['txt']},
+                ],
+                fileName: 'notes.md',
+            });
+            if (path === null) {
+                result.textContent = 'cancelled (null)';
+                return;
+            }
+            result.textContent = `writing to ${path}…`;
+            const body = new URLSearchParams();
+            body.set('_csrf_token', csrfTokenField.value);
+            body.set('path', path);
+            const response = await fetch('{{ path('save_path_write') }}', {method: 'POST', body});
+            const data = await response.json();
+            result.textContent = response.ok
+                ? `saved: ${path}`
+                : `write failed (${response.status}): ${JSON.stringify(data)}`;
+        } catch (error) {
+            result.textContent = `refused (${error})`;
+        }
+    });
+
+    document.getElementById('save-path-relative-button').addEventListener('click', async () => {
+        if (!invoke) {
+            relativeResult.textContent = 'invoke() not available (withGlobalTauri off, or opened outside Tauri)';
+            return;
+        }
+        relativeResult.textContent = 'choosing…';
+        try {
+            const path = await invoke('save_path', {directory: 'Documents'});
+            relativeResult.textContent = `unexpected success: ${JSON.stringify(path)}`;
+        } catch (error) {
+            relativeResult.textContent = `refused (${error})`;
+        }
     });
 })();
 </script>
