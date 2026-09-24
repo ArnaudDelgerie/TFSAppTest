@@ -82,7 +82,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Native path picker &amp; save dialog (hub plans 038, 051)</h2>
+    <h2>Native path picker &amp; save dialog (hub plans 038, 051, 053)</h2>
     <p>This IPC-only probe returns a selected absolute path; it does not upload or read it.</p>
     <p>
         <button type="button" data-picker="file">Pick file</button>
@@ -98,6 +98,16 @@
     <p>
         <button type="button" id="save-path-relative-button">Save As with a relative directory (should refuse)</button>
         <span id="save-path-relative-result">idle</span>
+    </p>
+    <p>Hub plan 053 — optional file filters on pick_path, same shape as save_path:</p>
+    <p>
+        <button type="button" data-pick-filters="markdown-images">Pick file (Markdown/Images filters)</button>
+        <button type="button" data-pick-filters="omitted">Pick file (no filters key)</button>
+        <button type="button" data-pick-filters="null">Pick file (null filters)</button>
+        <button type="button" data-pick-filters="empty">Pick file (empty filters)</button>
+        <button type="button" data-pick-filters="directory">Pick directory (filters should be ignored)</button>
+        <button type="button" data-pick-filters="malformed">Pick file (wrongly typed filter, should refuse)</button>
+        <span id="pick-filters-result">idle</span>
     </p>
 </div>
 
@@ -264,6 +274,55 @@
                 result.textContent = `${kind}: ${JSON.stringify(path)}`;
             } catch (error) {
                 result.textContent = `${kind}: refused (${error})`;
+            }
+        });
+    });
+})();
+</script>
+
+<script>
+(() => {
+    const result = document.getElementById('pick-filters-result');
+    const invoke = window.__TAURI__?.core?.invoke;
+    const markdownImages = [
+        {name: 'Markdown', extensions: ['md']},
+        {name: 'Images', extensions: ['png', 'jpg', 'jpeg']},
+    ];
+
+    document.querySelectorAll('[data-pick-filters]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const variant = button.dataset.pickFilters;
+            if (!invoke) {
+                result.textContent = `${variant}: invoke() not available (withGlobalTauri off, or opened outside Tauri)`;
+                return;
+            }
+            result.textContent = `${variant}: choosing…`;
+            try {
+                let args;
+                switch (variant) {
+                    case 'markdown-images':
+                        args = {kind: 'file', filters: markdownImages};
+                        break;
+                    case 'omitted':
+                        args = {kind: 'file'};
+                        break;
+                    case 'null':
+                        args = {kind: 'file', filters: null};
+                        break;
+                    case 'empty':
+                        args = {kind: 'file', filters: []};
+                        break;
+                    case 'directory':
+                        args = {kind: 'directory', filters: markdownImages};
+                        break;
+                    case 'malformed':
+                        args = {kind: 'file', filters: 'md'};
+                        break;
+                }
+                const path = await invoke('pick_path', args);
+                result.textContent = `${variant}: ${JSON.stringify(path)}`;
+            } catch (error) {
+                result.textContent = `${variant}: refused (${error})`;
             }
         });
     });
