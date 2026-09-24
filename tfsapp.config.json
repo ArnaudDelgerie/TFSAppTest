@@ -59,6 +59,10 @@
     },
     "picker": {
       "ipc": true
+    },
+    "close_guard": {
+      "ipc": true,
+      "bridge": true
     }
   }
 }

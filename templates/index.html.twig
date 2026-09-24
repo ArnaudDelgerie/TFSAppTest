@@ -111,6 +111,29 @@
     </p>
 </div>
 
+<div>
+    <h2>Close guards (hub plan 055)</h2>
+    <p>Frontend guards, two independent documents — invoke() with this document's context:</p>
+    <p>
+        <button type="button" data-doc-guard="editor:doc-1">Mark doc-1 dirty</button>
+        <button type="button" data-doc-unguard="editor:doc-1">Mark doc-1 clean</button>
+        <button type="button" data-doc-guard="editor:doc-2">Mark doc-2 dirty</button>
+        <button type="button" data-doc-unguard="editor:doc-2">Mark doc-2 clean</button>
+        <span id="doc-guard-result">idle</span>
+    </p>
+    <p>Backend guards, two independent simulated jobs — registered and removed by PHP through the loopback bridge:</p>
+    <input type="hidden" id="close-guard-csrf-token" value="{{ csrf_token('close_guard_job') }}">
+    <p>
+        <button type="button" data-job="export" data-job-action="start">Start export job</button>
+        <button type="button" data-job="export" data-job-action="complete">Complete export job</button>
+        <button type="button" data-job="export" data-job-action="fail">Fail export job</button>
+        <button type="button" data-job="mail" data-job-action="start">Start mail job</button>
+        <button type="button" data-job="mail" data-job-action="complete">Complete mail job</button>
+        <button type="button" data-job="mail" data-job-action="fail">Fail mail job</button>
+        <span id="job-guard-result">idle</span>
+    </p>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -443,4 +466,67 @@
     });
 })();
 </script>
+
+<script>
+(() => {
+    // The close-guard probe (hub plan 055). The frontend half fetches this
+    // document's context once and presents it back with every call — the
+    // context is the host's, never the page's — and the backend half is pure
+    // fetch() to the crude fixture route; the bridge call is PHP's, not ours.
+    const invoke = window.__TAURI__?.core?.invoke;
+    const result = document.getElementById('doc-guard-result');
+    const csrfTokenField = document.getElementById('close-guard-csrf-token');
+    const jobResult = document.getElementById('job-guard-result');
+    let documentContext = null;
+
+    document.querySelectorAll('button[data-doc-guard], button[data-doc-unguard]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            if (!invoke) {
+                result.textContent = 'invoke() not available (withGlobalTauri off, or opened outside Tauri)';
+                return;
+            }
+            const id = button.dataset.docGuard ?? button.dataset.docUnguard;
+            const registering = 'docGuard' in button.dataset;
+            try {
+                // One fetch per document, at first use — the contract's
+                // "fetch once at startup" made lazy so the page still works
+                // outside a guarded launch.
+                if (documentContext === null) {
+                    const answer = await invoke('close_guard_context');
+                    documentContext = answer.context;
+                }
+                if (registering) {
+                    await invoke('close_guard_register', {context: documentContext, id});
+                } else {
+                    await invoke('close_guard_remove', {context: documentContext, id});
+                }
+                result.textContent = `${id}: ${registering ? 'guarded' : 'unguarded'}`;
+            } catch (error) {
+                result.textContent = `${id}: refused (${error})`;
+            }
+        });
+    });
+
+    document.querySelectorAll('button[data-job]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            jobResult.textContent = `${button.dataset.job} ${button.dataset.jobAction}…`;
+            try {
+                const body = new URLSearchParams();
+                body.set('_csrf_token', csrfTokenField.value);
+                const response = await fetch(
+                    `/close-guard/job/${button.dataset.job}/${button.dataset.jobAction}`,
+                    {method: 'POST', body},
+                );
+                const data = await response.json();
+                jobResult.textContent = response.ok || 'fail' === button.dataset.jobAction
+                    ? `${data.job}: ${data.state} (guard ${data.id})`
+                    : `${button.dataset.job}: ${data.state} — ${JSON.stringify(data)}`;
+            } catch (error) {
+                jobResult.textContent = `${button.dataset.job}: request failed (${error})`;
+            }
+        });
+    });
+})();
+</script>
+
 {% endblock %}
