@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
+use ArnaudDelgerie\TFSAppBundle\Bridge\BackendCloseGuardInterface;
+use ArnaudDelgerie\TFSAppBundle\Bridge\Exception\BridgeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * Fixture for the hub's plan 055 end-to-end validation: two independent
@@ -15,8 +15,9 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * exactly the way a real worker's register-before-work / remove-in-finally
  * pair would (see the hub contract's close_guard section). The jobs are
  * fakes on purpose — the guard lifetime is the thing under test, not the
- * work. Hand-written and deliberately crude, like DurableUploadController
- * and SavePathController.
+ * work. Crude on purpose, like DurableUploadController and SavePathController;
+ * since bundle plan 017 the bridge calls themselves go through the
+ * bundle's BackendCloseGuardInterface, not hand-written HTTP.
  *
  * Two jobs, two stable IDs, one route pair: `export` and `mail` are distinct
  * kinds with distinct IDs, so starting one never touches the other's
@@ -32,27 +33,23 @@ final class CloseGuardController extends AbstractController
 
     #[Route('/close-guard/job/{job}/{action}', name: 'close_guard_job', methods: ['POST'], requirements: ['job' => 'export|mail', 'action' => 'start|complete|fail'])]
     #[IsCsrfTokenValid('close_guard_job', tokenKey: '_csrf_token')]
-    public function job(string $job, string $action, Request $request, HttpClientInterface $client): JsonResponse
+    public function job(string $job, string $action, BackendCloseGuardInterface $guards): JsonResponse
     {
         $id = self::JOBS[$job];
 
-        $bridgeUrl = $_SERVER['TFS_BRIDGE_URL'] ?? getenv('TFS_BRIDGE_URL') ?: null;
-        $bridgeToken = $_SERVER['TFS_BRIDGE_TOKEN'] ?? getenv('TFS_BRIDGE_TOKEN') ?: null;
-        if (!$bridgeUrl || !$bridgeToken) {
-            return $this->json(['available' => false]);
-        }
-
         // Register is idempotent per ID, so a restart of the same job kind is
-        // harmless; "start" registers before any work would begin.
+        // harmless; "start" registers before any work would begin. A false
+        // return is the bundle's "no guard installed" — no bridge, or the
+        // close_guard group gated — never a claim of protection.
         if ('start' === $action || 'fail' === $action) {
-            $registered = $client->request('POST', rtrim($bridgeUrl, '/').'/close-guard/register', [
-                'auth_bearer' => $bridgeToken,
-                'json' => ['id' => $id],
-            ]);
-            if (200 !== $registered->getStatusCode()) {
+            try {
+                if (!$guards->register($id)) {
+                    return $this->json(['available' => false, 'job' => $job, 'id' => $id, 'state' => 'unavailable']);
+                }
+            } catch (BridgeException $e) {
                 return $this->json(
-                    ['available' => true] + $registered->toArray(false),
-                    $registered->getStatusCode(),
+                    ['available' => true, 'ok' => false, 'job' => $job, 'id' => $id, 'state' => 'rejected', 'error' => $e->getMessage()],
+                    500,
                 );
             }
         }
@@ -67,16 +64,19 @@ final class CloseGuardController extends AbstractController
             return $this->json(['available' => true, 'ok' => false, 'job' => $job, 'id' => $id, 'state' => 'failed', 'error' => 'simulated failure — guard left standing'], 500);
         }
 
-        // "complete" is the finally: removal of an absent guard also succeeds,
+        // "complete" is the finally: removing an absent guard also succeeds,
         // so completing a job that never started is a plain ok.
-        $removed = $client->request('POST', rtrim($bridgeUrl, '/').'/close-guard/remove', [
-            'auth_bearer' => $bridgeToken,
-            'json' => ['id' => $id],
-        ]);
+        try {
+            $removed = $guards->remove($id);
+        } catch (BridgeException $e) {
+            return $this->json(
+                ['available' => true, 'ok' => false, 'job' => $job, 'id' => $id, 'state' => 'rejected', 'error' => $e->getMessage()],
+                500,
+            );
+        }
 
-        return $this->json(
-            ['available' => true] + $removed->toArray(false) + ['job' => $job, 'id' => $id, 'state' => 'done'],
-            $removed->getStatusCode(),
-        );
+        return $removed
+            ? $this->json(['available' => true, 'ok' => true, 'job' => $job, 'id' => $id, 'state' => 'done'])
+            : $this->json(['available' => false, 'job' => $job, 'id' => $id, 'state' => 'unavailable']);
     }
 }
