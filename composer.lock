@@ -8,11 +8,11 @@
     "packages": [
         {
             "name": "arnauddelgerie/tfs-app-bundle",
-            "version": "dev-017-backend-close-guards",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "/home/arnaud/Dev/TFSApp/TFSAppBundle",
-                "reference": "2f87bfc2f1e1594cf54ff29831b3282d1028f073"
+                "reference": "c6a0cf505bb70fc4c37f5aae1a327f17e888c226"
             },
             "require": {
                 "php": ">=8.2",
