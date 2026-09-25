@@ -3,6 +3,7 @@
   "identifier": "dev.local.tfsapp-test",
   "project_name": "tfsapp-test",
   "app_version": "0.7.1",
+  "file_associations": { "mime_types": ["text/markdown"] },
   "workers": [
     { "transports": ["courant", "planifie", "fond"] },
     { "transports": ["urgent"] }
@@ -63,6 +64,9 @@
     "close_guard": {
       "ipc": true,
       "bridge": true
+    },
+    "open_files": {
+      "ipc": true
     }
   }
 }

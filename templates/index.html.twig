@@ -134,6 +134,18 @@
     </p>
 </div>
 
+<div>
+    <h2>Open with local files (hub plan 056)</h2>
+    <p>Receiver — subscribes to <code>tfsapp://open-files-pending</code> before its first read, then reads on notification only, never polls:</p>
+    <input type="hidden" id="open-files-csrf-token" value="{{ csrf_token('open_files_probe') }}">
+    <p>
+        <label><input type="checkbox" id="open-files-hold-ack"> Hold acknowledgements (leaves requests pending, to exercise reload replay)</label>
+        <button type="button" id="open-files-drain">Read pending now</button>
+        <span id="open-files-status">starting…</span>
+    </p>
+    <ul id="open-files-log"></ul>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -526,6 +538,81 @@
             }
         });
     });
+})();
+</script>
+
+<script>
+(() => {
+    // The open-files probe (hub plan 056). The contract's receiver sequence,
+    // made clickable: the listener is awaited before the first read — so an
+    // arrival racing the initial read is covered, including one that landed
+    // during the splash — and after that the page reads on notification
+    // only. Acceptance is idempotent by request id on the PHP side; the ack
+    // is what removes the request, so holding it leaves the id pending and a
+    // reload replays it — the receiver must then treat it as already
+    // accepted, not process it twice.
+    const invoke = window.__TAURI__?.core?.invoke;
+    const listen = window.__TAURI__?.event?.listen;
+    const status = document.getElementById('open-files-status');
+    const log = document.getElementById('open-files-log');
+    const csrfTokenField = document.getElementById('open-files-csrf-token');
+    const holdAck = document.getElementById('open-files-hold-ack');
+
+    const append = (text) => {
+        const entry = document.createElement('li');
+        entry.textContent = text;
+        log.append(entry);
+    };
+
+    const acceptOnce = async (request) => {
+        const body = new URLSearchParams();
+        body.set('_csrf_token', csrfTokenField.value);
+        body.set('id', request.id);
+        body.set('paths', JSON.stringify(request.paths));
+        const response = await fetch('/open-files/accept', {method: 'POST', body});
+        if (!response.ok) {
+            throw new Error(`accept ${request.id}: HTTP ${response.status}`);
+        }
+        return await response.json();
+    };
+
+    let running = false, again = false;
+    const drain = async () => {
+        if (running) { again = true; return; }
+        running = true;
+        try {
+            const { requests } = await invoke('open_files_pending');
+            for (const request of requests) {
+                const outcome = await acceptOnce(request);
+                append(`request ${request.id} — ${request.paths.join(' | ')} — ${outcome.accepted ? 'accepted (new)' : 'accepted (replay — already known, not processed again)'}`);
+                if (holdAck.checked) {
+                    append(`request ${request.id} — ack held, still pending`);
+                } else {
+                    await invoke('open_files_ack', { id: request.id });
+                    append(`request ${request.id} — acknowledged`);
+                }
+            }
+        } catch (error) {
+            status.textContent = `error: ${error}`;
+        } finally {
+            running = false;
+            if (again) { again = false; drain(); }
+        }
+    };
+
+    document.getElementById('open-files-drain').addEventListener('click', () => drain());
+
+    if (!invoke || !listen) {
+        status.textContent = 'invoke()/listen() not available (withGlobalTauri off, or opened outside Tauri)';
+        return;
+    }
+
+    (async () => {
+        // Subscribe before you read: this await is the whole race cover.
+        await listen('tfsapp://open-files-pending', () => drain());
+        status.textContent = 'listening';
+        await drain();
+    })();
 })();
 </script>
 
