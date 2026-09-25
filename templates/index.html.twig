@@ -587,7 +587,12 @@
             const { requests } = await invoke('open_files_pending');
             for (const request of requests) {
                 const outcome = await acceptOnce(request);
-                append(`request ${request.id} — ${request.paths.join(' | ')} — ${outcome.accepted ? 'accepted (new)' : 'accepted (replay — already known, not processed again)'}`);
+                // Each path is displayed with what the PHP backend says it is
+                // — file or directory (plan 057): the wire carries paths
+                // only, never a type field, so the receiver asks its own
+                // backend.
+                const described = request.paths.map((path, index) => `${path} (${outcome.kinds[index] ?? 'unknown'})`);
+                append(`request ${request.id} — ${described.join(' | ')} — ${outcome.accepted ? 'accepted (new)' : 'accepted (replay — already known, not processed again)'}`);
                 if (holdAck.checked) {
                     append(`request ${request.id} — ack held, still pending`);
                 } else {

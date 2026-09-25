@@ -21,8 +21,12 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
  * is true the first time a request id arrives and false forever after, which
  * is precisely the answer a receiver needs to decide "open a new document"
  * from "select the already-open one" without processing anything twice. The
- * paths ride along for the record; what the app does with them is its own
- * backend's business, and here that business is writing a log line.
+ * paths ride along for the record, each classified as a file or a directory —
+ * the hub's plan 057 addition: a receiver discovers what each delivered path
+ * is by asking its own backend, never from the wire, and a path deleted
+ * between delivery and acceptance records as "gone" rather than failing the
+ * acceptance. What the app does with them is its own backend's business, and
+ * here that business is writing a log line.
  */
 final class OpenFilesController extends AbstractController
 {
@@ -39,15 +43,26 @@ final class OpenFilesController extends AbstractController
         $file = $this->storePath();
         $accepted = json_decode(@file_get_contents($file) ?: '[]', true) ?: [];
         if (\array_key_exists($id, $accepted)) {
-            return $this->json(['id' => $id, 'accepted' => false, 'at' => $accepted[$id]['at']]);
+            return $this->json(['id' => $id, 'accepted' => false, 'kinds' => $accepted[$id]['kinds'], 'at' => $accepted[$id]['at']]);
         }
 
-        $accepted[$id] = ['paths' => $paths, 'at' => date(\DateTimeInterface::ATOM)];
+        $kinds = [];
+        foreach ($paths as $path) {
+            if (\is_string($path) && \is_file($path)) {
+                $kinds[] = 'file';
+            } elseif (\is_string($path) && \is_dir($path)) {
+                $kinds[] = 'directory';
+            } else {
+                $kinds[] = 'gone';
+            }
+        }
+
+        $accepted[$id] = ['paths' => $paths, 'kinds' => $kinds, 'at' => date(\DateTimeInterface::ATOM)];
         if (false === file_put_contents($file, json_encode($accepted, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES))) {
             return $this->json(['error' => 'cannot record the acceptance'], 500);
         }
 
-        return $this->json(['id' => $id, 'accepted' => true, 'at' => $accepted[$id]['at']]);
+        return $this->json(['id' => $id, 'accepted' => true, 'kinds' => $kinds, 'at' => $accepted[$id]['at']]);
     }
 
     private function storePath(): string
