@@ -160,10 +160,16 @@
     </p>
     <ul id="media-device-list"></ul>
     <p>
-        <button type="button" id="media-record-button">Record 5 seconds</button>
+        <button type="button" id="media-record-button">Record 5 seconds (WebAudio/WAV)</button>
         <span id="media-record-status">idle</span>
     </p>
     <p><audio id="media-playback" controls></audio></p>
+    <p>MediaRecorder.isTypeSupported(): <span id="media-recorder-mime-support">checking…</span></p>
+    <p>
+        <button type="button" id="media-recorder-button">Record 5 seconds (MediaRecorder)</button>
+        <span id="media-recorder-status">idle</span>
+    </p>
+    <p><audio id="media-recorder-playback" controls></audio></p>
 </div>
 
 <script>
@@ -778,6 +784,54 @@
                 await audioContext.close();
             }
             recordButton.disabled = false;
+        }
+    });
+})();
+</script>
+
+<script>
+(() => {
+    // Re-tested after the user installed gstreamer1.0-plugins-bad, which the
+    // spike's original NotSupportedError suggested might be the missing
+    // piece (it provides transcodebin/encodebin). This button is kept
+    // alongside the WebAudio/WAV path above rather than replacing it: if
+    // MediaRecorder works here, both paths stay useful evidence; if it
+    // still doesn't, the WAV path is the one this probe can rely on.
+    const mimeSupport = document.getElementById('media-recorder-mime-support');
+    const recorderButton = document.getElementById('media-recorder-button');
+    const recorderStatus = document.getElementById('media-recorder-status');
+    const recorderPlayback = document.getElementById('media-recorder-playback');
+
+    const candidateTypes = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4'];
+    if (typeof MediaRecorder === 'undefined') {
+        mimeSupport.textContent = 'MediaRecorder is not defined at all';
+    } else {
+        mimeSupport.textContent = candidateTypes
+            .map((type) => `${type}: ${MediaRecorder.isTypeSupported(type)}`)
+            .join(' | ');
+    }
+
+    recorderButton.addEventListener('click', async () => {
+        recorderButton.disabled = true;
+        recorderStatus.textContent = 'requesting microphone…';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            const chunks = [];
+            const recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (event) => chunks.push(event.data);
+            recorder.onstop = () => {
+                stream.getTracks().forEach((track) => track.stop());
+                const blob = new Blob(chunks, {type: recorder.mimeType});
+                recorderPlayback.src = URL.createObjectURL(blob);
+                recorderStatus.textContent = `recorded ${blob.size} bytes as ${recorder.mimeType} — press play above`;
+                recorderButton.disabled = false;
+            };
+            recorder.start();
+            recorderStatus.textContent = 'recording for 5 seconds — say something…';
+            setTimeout(() => recorder.stop(), 5000);
+        } catch (error) {
+            recorderStatus.textContent = `refused (${error.name}: ${error.message})`;
+            recorderButton.disabled = false;
         }
     });
 })();
