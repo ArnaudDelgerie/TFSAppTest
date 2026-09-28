@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1
+
+Validation entry for the hub's plan 070 (microphone indicator and local
+revocation) — the WebAudio/WAV recorder and the MediaRecorder retest button
+are exercised against an installed copy, so the launch reads a real
+`data/config.json` and the window title can be checked while a capture runs.
+
 ## 0.6.1
 
 Validation entry for the hub's plan 018 (remote sources — install and update
