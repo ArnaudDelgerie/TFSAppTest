@@ -172,6 +172,13 @@
     <p><audio id="media-recorder-playback" controls></audio></p>
 </div>
 
+<div class="example-wrapper">
+    <h2>User directories (hub plan 059, <code>actions.paths</code>)</h2>
+    <p>TFS_USER_DOWNLOADS_DIR (declared): <strong id="user-downloads-dir">{{ user_downloads_dir ?: '(absent)' }}</strong></p>
+    <p>TFS_USER_PICTURES_DIR (declared): <strong id="user-pictures-dir">{{ user_pictures_dir ?: '(absent)' }}</strong></p>
+    <p>TFS_USER_MUSIC_DIR (left undeclared on purpose): <strong id="user-music-dir-absent">{{ user_music_dir_absent ? 'absent, as expected' : 'PRESENT — should not happen' }}</strong></p>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');

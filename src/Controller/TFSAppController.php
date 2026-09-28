@@ -34,6 +34,12 @@ final class TFSAppController extends AbstractController
             // this launch actually granted the microphone, never whether the
             // manifest merely asked for it.
             'media_microphone' => ($_SERVER['TFS_MEDIA_MICROPHONE'] ?? getenv('TFS_MEDIA_MICROPHONE')) === '1',
+            // Declared in tfsapp.config.json (hub plan 059, CONTRACT.md §3/§7):
+            // downloads and pictures should resolve, music is left undeclared
+            // on purpose to prove its variable stays absent.
+            'user_downloads_dir' => $_SERVER['TFS_USER_DOWNLOADS_DIR'] ?? getenv('TFS_USER_DOWNLOADS_DIR') ?: null,
+            'user_pictures_dir' => $_SERVER['TFS_USER_PICTURES_DIR'] ?? getenv('TFS_USER_PICTURES_DIR') ?: null,
+            'user_music_dir_absent' => ($_SERVER['TFS_USER_MUSIC_DIR'] ?? getenv('TFS_USER_MUSIC_DIR') ?: null) === null,
         ]);
 
         // The hub's own default CSP has no media-src, so it falls back to

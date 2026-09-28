@@ -71,6 +71,10 @@
     },
     "media": {
       "microphone": true
+    },
+    "paths": {
+      "downloads": true,
+      "pictures": true
     }
   }
 }
