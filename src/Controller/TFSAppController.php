@@ -23,7 +23,7 @@ final class TFSAppController extends AbstractController
         // a 401 on subscribe.
         $authorization->setCookie($request, [PingMessage::TOPIC]);
 
-        return $this->render('index.html.twig', [
+        $response = $this->render('index.html.twig', [
             // Lets a tester see which mode the running instance is in
             // without guessing from dispatch timing alone (plan 028,
             // CONTRACT.md §3's TFS_ASYNC_WORKER).
@@ -35,6 +35,22 @@ final class TFSAppController extends AbstractController
             // manifest merely asked for it.
             'media_microphone' => ($_SERVER['TFS_MEDIA_MICROPHONE'] ?? getenv('TFS_MEDIA_MICROPHONE')) === '1',
         ]);
+
+        // The hub's own default CSP has no media-src, so it falls back to
+        // default-src 'self' — which does not cover blob:. The recorded
+        // clip's playback below is a blob: URL (CONTRACT.md §4's "a
+        // response that already carries one of those field names keeps its
+        // own" override rule), so this page needs its own policy, otherwise
+        // identical to the host's default plus that one directive.
+        $response->headers->set(
+            'Content-Security-Policy',
+            "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost; "
+            . "img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+            . "script-src 'self' 'unsafe-inline'; media-src 'self' blob:; "
+            . "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+        );
+
+        return $response;
     }
 
     // #[Route('/healthz', name: 'healthz', methods: ['GET'])]
