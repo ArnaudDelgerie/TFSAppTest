@@ -30,6 +30,10 @@ final class TFSAppController extends AbstractController
             'async_worker_mode' => ($_SERVER['TFS_ASYNC_WORKER'] ?? getenv('TFS_ASYNC_WORKER')) === '1',
             'mercure_public_url' => $_SERVER['MERCURE_PUBLIC_URL'] ?? getenv('MERCURE_PUBLIC_URL') ?: null,
             'ping_topic' => PingMessage::TOPIC,
+            // Reported, not assumed (hub plan 050, CONTRACT.md §3): whether
+            // this launch actually granted the microphone, never whether the
+            // manifest merely asked for it.
+            'media_microphone' => ($_SERVER['TFS_MEDIA_MICROPHONE'] ?? getenv('TFS_MEDIA_MICROPHONE')) === '1',
         ]);
     }
 

@@ -68,6 +68,9 @@
     "open_files": {
       "ipc": true,
       "directories": true
+    },
+    "media": {
+      "microphone": true
     }
   }
 }

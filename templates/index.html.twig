@@ -146,6 +146,26 @@
     <ul id="open-files-log"></ul>
 </div>
 
+<div class="example-wrapper">
+    <h2>Microphone capture (hub plan 050, <code>actions.media</code>)</h2>
+    <p>TFS_MEDIA_MICROPHONE: <strong id="media-microphone-flag">{{ media_microphone ? 'granted' : 'not granted' }}</strong></p>
+    <p>
+        <button type="button" data-media-request="audio">Request audio-only</button>
+        <button type="button" data-media-request="video">Request video-only (should refuse)</button>
+        <button type="button" data-media-request="audio-video">Request audio+video (should refuse)</button>
+        <span id="media-request-result">idle</span>
+    </p>
+    <p>
+        <button type="button" id="media-list-devices">List input devices (enumerateDevices)</button>
+    </p>
+    <ul id="media-device-list"></ul>
+    <p>
+        <button type="button" id="media-record-button">Record 5 seconds</button>
+        <span id="media-record-status">idle</span>
+    </p>
+    <p><audio id="media-playback" controls></audio></p>
+</div>
+
 <script>
 (() => {
     const button = document.getElementById('ping-button');
@@ -621,6 +641,85 @@
         status.textContent = 'listening';
         await drain();
     })();
+})();
+</script>
+
+<script>
+(() => {
+    // The microphone probe (hub plan 050, decision 007). Three requests
+    // exercise the decision table directly: audio-only should succeed
+    // exactly when actions.media.microphone is declared, video-only and
+    // audio+video should always refuse — WebKit grants a combined request
+    // wholly or not at all, so there is no partial "audio only" fallback to
+    // observe here.
+    const requestResult = document.getElementById('media-request-result');
+    const deviceList = document.getElementById('media-device-list');
+    const recordButton = document.getElementById('media-record-button');
+    const recordStatus = document.getElementById('media-record-status');
+    const playback = document.getElementById('media-playback');
+
+    const stopStream = (stream) => stream.getTracks().forEach((track) => track.stop());
+
+    document.querySelectorAll('[data-media-request]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const kind = button.dataset.mediaRequest;
+            const constraints = {
+                audio: kind === 'audio' || kind === 'audio-video',
+                video: kind === 'video' || kind === 'audio-video',
+            };
+            requestResult.textContent = `${kind}: requesting…`;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                requestResult.textContent = `${kind}: granted (${stream.getTracks().map((t) => t.kind).join(', ')})`;
+                stopStream(stream);
+            } catch (error) {
+                requestResult.textContent = `${kind}: refused (${error.name}: ${error.message})`;
+            }
+        });
+    });
+
+    document.getElementById('media-list-devices').addEventListener('click', async () => {
+        deviceList.textContent = '';
+        try {
+            // A device-info grant is what makes the labels below non-empty —
+            // without it enumerateDevices() still lists the devices, but
+            // every label is blank (CONTRACT.md §7).
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            for (const device of devices.filter((d) => d.kind === 'audioinput')) {
+                const item = document.createElement('li');
+                item.textContent = `${device.label || '(no label — device-info not granted)'} — ${device.deviceId}`;
+                deviceList.append(item);
+            }
+        } catch (error) {
+            const item = document.createElement('li');
+            item.textContent = `error: ${error}`;
+            deviceList.append(item);
+        }
+    });
+
+    recordButton.addEventListener('click', async () => {
+        recordButton.disabled = true;
+        recordStatus.textContent = 'requesting microphone…';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+            const chunks = [];
+            const recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (event) => chunks.push(event.data);
+            recorder.onstop = () => {
+                stopStream(stream);
+                const blob = new Blob(chunks, {type: recorder.mimeType});
+                playback.src = URL.createObjectURL(blob);
+                recordStatus.textContent = `recorded ${blob.size} bytes — press play above`;
+                recordButton.disabled = false;
+            };
+            recorder.start();
+            recordStatus.textContent = 'recording for 5 seconds — say something…';
+            setTimeout(() => recorder.stop(), 5000);
+        } catch (error) {
+            recordStatus.textContent = `refused (${error.name}: ${error.message})`;
+            recordButton.disabled = false;
+        }
+    });
 })();
 </script>
 
