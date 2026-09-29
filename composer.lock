@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "/home/arnaud/Dev/TFSApp/TFSAppBundle",
-                "reference": "c6a0cf505bb70fc4c37f5aae1a327f17e888c226"
+                "reference": "453131ff8057e49098105d0805545d534eec7930"
             },
             "require": {
                 "php": ">=8.2",
