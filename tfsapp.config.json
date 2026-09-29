@@ -20,14 +20,6 @@
     ],
     "post-update": [
       "about"
-    ],
-    "pre-build": [
-      "composer install --no-dev --no-scripts --optimize-autoloader",
-      "php bin/console cache:clear --env=prod --no-debug",
-      "php bin/console cache:warmup --env=prod --no-debug"
-    ],
-    "post-build": [
-      "composer install"
     ]
   },
   "releases_repo": "ArnaudDelgerie/TFSAppTest-releases",
