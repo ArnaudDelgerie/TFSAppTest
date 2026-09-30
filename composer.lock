@@ -4,15 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d92c5866c4fedfdd399b316c94820dd",
+    "content-hash": "22173f78ea7390b05b8608b156dc5455",
     "packages": [
         {
             "name": "arnauddelgerie/tfs-app-bundle",
-            "version": "dev-main",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ArnaudDelgerie/TFSAppBundle",
+                "reference": "c4167854050c64b6eefb05d645c2cba118446292"
+            },
             "dist": {
-                "type": "path",
-                "url": "/home/arnaud/Dev/TFSApp/TFSAppBundle",
-                "reference": "453131ff8057e49098105d0805545d534eec7930"
+                "type": "zip",
+                "url": "https://api.github.com/repos/ArnaudDelgerie/TFSAppBundle/zipball/c4167854050c64b6eefb05d645c2cba118446292",
+                "reference": "c4167854050c64b6eefb05d645c2cba118446292",
+                "shasum": ""
             },
             "require": {
                 "php": ">=8.2",
@@ -31,7 +37,7 @@
             },
             "suggest": {
                 "doctrine/dbal": "To register the SQLite WAL/busy_timeout pragma middleware (sqlite_pragmas)",
-                "symfony/twig-bundle": "To expose the tfsapp Twig global (station identity/capability flags for templates)"
+                "symfony/twig-bundle": "To expose the tfsapp Twig global (hub context/capability flags for templates)"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -39,19 +45,30 @@
                     "ArnaudDelgerie\\TFSAppBundle\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "ArnaudDelgerie\\TFSAppBundle\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
-            "description": "Symfony bundle that turns a Symfony app into a local-first desktop app (Tauri + FrankenPHP) — companion bundle to TFSAppWorkstation.",
-            "transport-options": {
-                "symlink": false,
-                "relative": false
-            }
+            "authors": [
+                {
+                    "name": "Arnaud Delgerie"
+                }
+            ],
+            "description": "Symfony bundle for apps run by TFSAppHub, a host that installs and runs Symfony apps as local desktop apps.",
+            "homepage": "https://github.com/ArnaudDelgerie/TFSAppBundle",
+            "keywords": [
+                "desktop-app",
+                "local-first",
+                "symfony",
+                "symfony-bundle",
+                "tfsapp",
+                "tfsapphub"
+            ],
+            "support": {
+                "issues": "https://github.com/ArnaudDelgerie/TFSAppBundle/issues",
+                "source": "https://github.com/ArnaudDelgerie/TFSAppBundle"
+            },
+            "time": "2026-09-30T16:33:33+00:00"
         },
         {
             "name": "doctrine/collections",
@@ -10048,9 +10065,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "arnauddelgerie/tfs-app-bundle": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

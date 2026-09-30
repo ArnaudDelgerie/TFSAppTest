@@ -22,7 +22,6 @@
       "about"
     ]
   },
-  "releases_repo": "ArnaudDelgerie/TFSAppTest-releases",
   "run": {
     "mcp-serve": {
       "command": "app:run:mcp-serve",
