@@ -11,7 +11,7 @@ final class Version20260715220100 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Deliberately invalid migration 2/2 (plan 020 snapshot/restore validation)';
+        return 'Deliberately invalid migration 2/2 (snapshot/restore validation)';
     }
 
     public function up(Schema $schema): void

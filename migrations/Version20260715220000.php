@@ -11,7 +11,7 @@ final class Version20260715220000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Create app_widget table (plan 020 snapshot/restore validation, migration 1/2 — valid)';
+        return 'Create app_widget table (snapshot/restore validation, migration 1/2 — valid)';
     }
 
     public function up(Schema $schema): void

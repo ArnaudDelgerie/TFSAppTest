@@ -9,7 +9,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 
 /**
- * Fixture for the hub's plan 056 end-to-end validation: the PHP-side half of
+ * Fixture for the open-files checks (release checklist F10/F11, CONTRACT.md
+ * §7): the PHP-side half of
  * an open-files receiver's acceptance. The hub's contract is explicit that
  * delivery is replayable until acknowledgement, not exactly-once — a reload
  * between acceptance and acknowledgement re-exposes the same request id — so
@@ -22,7 +23,7 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
  * is precisely the answer a receiver needs to decide "open a new document"
  * from "select the already-open one" without processing anything twice. The
  * paths ride along for the record, each classified as a file or a directory —
- * the hub's plan 057 addition: a receiver discovers what each delivered path
+ * a receiver discovers what each delivered path
  * is by asking its own backend, never from the wire, and a path deleted
  * between delivery and acceptance records as "gone" rather than failing the
  * acceptance. What the app does with them is its own backend's business, and

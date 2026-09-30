@@ -10,15 +10,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Fixture for the station's plan 047 ("run" commands) end-to-end
- * validation: a visible, long-running `concurrent: true` alias that reads
- * and writes the app's own shared DB (the `app_note` table, plan 020's
- * snapshot/restore fixture) so a coexisting app window's own DB access can
+ * Fixture for the concurrent `run` checks (release checklist E2/E3): a
+ * visible, long-running `concurrent: true` alias that reads
+ * and writes the app's own shared DB (the `app_note` table) so a
+ * coexisting app window's own DB access can
  * be observed to see its writes. Runs until killed (SIGTERM/SIGINT with no
  * handler installed is PHP's default terminate — exactly what the
  * launcher's `run <alias>`/coexistence-watchdog termination expects).
  */
-#[AsCommand(name: 'app:run:mcp-serve', description: 'Plan 047 fixture: a concurrent-safe long-running command that ticks the shared DB.')]
+#[AsCommand(name: 'app:run:mcp-serve', description: 'Concurrent `run` fixture: a long-running command that ticks the shared DB.')]
 final class RunMcpServeCommand extends Command
 {
     public function __construct(private readonly Connection $connection)

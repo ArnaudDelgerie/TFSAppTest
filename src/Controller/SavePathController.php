@@ -9,16 +9,16 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 
 /**
- * Fixture for the hub's plan 051 end-to-end validation. The hub's save_path
+ * Fixture for the save_path check (release checklist F3, CONTRACT.md §7):
+ * the hub's save_path
  * command only ever returns a path the person chose in the native dialog; it
  * never writes to it. This route is the "the app's PHP creates it" half the
  * contract talks about — hand-written and deliberately crude, no path
- * confinement, exactly like DurableUploadController and the plan's own
- * "crude fixture" framing.
+ * confinement, exactly like DurableUploadController.
  */
 final class SavePathController extends AbstractController
 {
-    private const string FIXED_CONTENT = "Written via save_path (hub plan 051).\n";
+    private const string FIXED_CONTENT = "Written via save_path.\n";
 
     #[Route('/save-path-write', name: 'save_path_write', methods: ['POST'])]
     #[IsCsrfTokenValid('save_path_write', tokenKey: '_csrf_token')]

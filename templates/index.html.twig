@@ -22,7 +22,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Secrets demo (native actions, plan 029)</h2>
+    <h2>Secrets demo (native actions.secrets)</h2>
     <p>
         <label>Key <input type="text" id="secrets-key" value="openai"></label>
         <label>Value <input type="text" id="secrets-value" value="sk-test"></label>
@@ -47,7 +47,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Check for updates (native actions, plan 035)</h2>
+    <h2>Check for updates (native actions.update)</h2>
     <p>
         Bridge (PHP -&gt; HTTP -&gt; GitHub):
         <button type="button" id="update-bridge-button">check</button>
@@ -61,7 +61,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>File upload demo (native drag-and-drop, station plan 059)</h2>
+    <h2>File upload demo (native drag-and-drop)</h2>
     <p>Drag a file from the file manager onto the field below, or click it to pick one.</p>
     <p>
         <label>File <input type="file" id="upload-file"></label>
@@ -71,7 +71,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Durable file (hub plan 049)</h2>
+    <h2>Durable file (survives update, rollback and export/import)</h2>
     <p>Written under APP_UPLOAD_DIR — should survive an update, a rollback, and an export/import round trip.</p>
     <p>
         <label>File <input type="file" id="durable-file"></label>
@@ -82,7 +82,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Native path picker &amp; save dialog (hub plans 038, 051, 053)</h2>
+    <h2>Native path picker &amp; save dialog (actions.picker)</h2>
     <p>This IPC-only probe returns a selected absolute path; it does not upload or read it.</p>
     <p>
         <button type="button" data-picker="file">Pick file</button>
@@ -99,7 +99,7 @@
         <button type="button" id="save-path-relative-button">Save As with a relative directory (should refuse)</button>
         <span id="save-path-relative-result">idle</span>
     </p>
-    <p>Hub plan 053 — optional file filters on pick_path, same shape as save_path:</p>
+    <p>Optional file filters on pick_path, same shape as save_path:</p>
     <p>
         <button type="button" data-pick-filters="markdown-images">Pick file (Markdown/Images filters)</button>
         <button type="button" data-pick-filters="omitted">Pick file (no filters key)</button>
@@ -112,7 +112,7 @@
 </div>
 
 <div>
-    <h2>Close guards (hub plan 055)</h2>
+    <h2>Close guards (actions.close_guard)</h2>
     <p>Frontend guards, two independent documents — invoke() with this document's context:</p>
     <p>
         <button type="button" data-doc-guard="editor:doc-1">Mark doc-1 dirty</button>
@@ -135,7 +135,7 @@
 </div>
 
 <div>
-    <h2>Open with local files (hub plan 056)</h2>
+    <h2>Open with local files (actions.open_files)</h2>
     <p>Receiver — subscribes to <code>tfsapp://open-files-pending</code> before its first read, then reads on notification only, never polls:</p>
     <input type="hidden" id="open-files-csrf-token" value="{{ csrf_token('open_files_probe') }}">
     <p>
@@ -147,7 +147,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>Microphone capture (hub plan 050, <code>actions.media</code>)</h2>
+    <h2>Microphone capture (<code>actions.media</code>)</h2>
     <p>TFS_MEDIA_MICROPHONE: <strong id="media-microphone-flag">{{ media_microphone ? 'granted' : 'not granted' }}</strong></p>
     <p>
         <button type="button" data-media-request="audio">Request audio-only</button>
@@ -173,7 +173,7 @@
 </div>
 
 <div class="example-wrapper">
-    <h2>User directories (hub plan 059, <code>actions.paths</code>)</h2>
+    <h2>User directories (<code>actions.paths</code>)</h2>
     <p>TFS_USER_DOWNLOADS_DIR (declared): <strong id="user-downloads-dir">{{ user_downloads_dir ?: '(absent)' }}</strong></p>
     <p>TFS_USER_PICTURES_DIR (declared): <strong id="user-pictures-dir">{{ user_pictures_dir ?: '(absent)' }}</strong></p>
     <p>TFS_USER_MUSIC_DIR (left undeclared on purpose): <strong id="user-music-dir-absent">{{ user_music_dir_absent ? 'absent, as expected' : 'PRESENT — should not happen' }}</strong></p>
@@ -188,7 +188,7 @@
     const topic = {{ ping_topic|json_encode|raw }};
     let expectedCorrelationId = null;
     // Sync-mode dispatch publishes the Mercure update *before* /ping's own
-    // JSON response comes back (station plan 033 step 2 finding), so the
+    // JSON response comes back, so the
     // push can land before the click handler below even knows which
     // correlationId to expect. Buffer every push by id so a push that
     // arrives first is still found once the id becomes known, instead of
@@ -488,8 +488,8 @@
     const result = document.getElementById('upload-result');
 
     // Fires on both click-to-select and a real OS drop onto the input —
-    // that's exactly what plan 059 disabled Tauri's native drag-drop
-    // handler for: without the fix, a drop never reaches this listener at
+    // that's exactly why the host disables the WebView's native drag-drop
+    // handler: without the fix, a drop never reaches this listener at
     // all (Wry swallows it before the DOM sees anything).
     fileInput.addEventListener('change', async () => {
         const file = fileInput.files[0];
@@ -514,7 +514,7 @@
 
 <script>
 (() => {
-    // The close-guard probe (hub plan 055). The frontend half fetches this
+    // The close-guard probe. The frontend half fetches this
     // document's context once and presents it back with every call — the
     // context is the host's, never the page's — and the backend half is pure
     // fetch() to the crude fixture route; the bridge call is PHP's, not ours.
@@ -576,7 +576,7 @@
 
 <script>
 (() => {
-    // The open-files probe (hub plan 056). The contract's receiver sequence,
+    // The open-files probe. The contract's receiver sequence,
     // made clickable: the listener is awaited before the first read — so an
     // arrival racing the initial read is covered, including one that landed
     // during the splash — and after that the page reads on notification
@@ -621,7 +621,7 @@
             for (const request of requests) {
                 const outcome = await acceptOnce(request);
                 // Each path is displayed with what the PHP backend says it is
-                // — file or directory (plan 057): the wire carries paths
+                // — file or directory: the wire carries paths
                 // only, never a type field, so the receiver asks its own
                 // backend.
                 const described = request.paths.map((path, index) => `${path} (${outcome.kinds[index] ?? 'unknown'})`);
@@ -659,7 +659,7 @@
 
 <script>
 (() => {
-    // The microphone probe (hub plan 050, decision 007). Three requests
+    // The microphone probe. Three requests
     // exercise the decision table directly: audio-only should succeed
     // exactly when actions.media.microphone is declared, video-only and
     // audio+video should always refuse — WebKit grants a combined request

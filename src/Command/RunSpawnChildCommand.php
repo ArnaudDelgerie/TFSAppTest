@@ -10,14 +10,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 
 /**
- * Fixture for the station's plan 061 (process-group teardown) validation: a
+ * Fixture for the process-group teardown check (release checklist E4): a
  * long-running command that itself spawns a child process (a plain `sleep`,
  * detached from PHP's own signal handling) and then blocks forever — proving
  * a launcher's teardown reaches a whole descendant tree, not just the one PHP
  * pid it recorded. `concurrent: false` (standalone-only): nothing about this
  * fixture needs to run alongside a live window.
  */
-#[AsCommand(name: 'app:run:spawn-child', description: 'Plan 061 fixture: spawns a grandchild process and blocks forever.')]
+#[AsCommand(name: 'app:run:spawn-child', description: 'Process-group teardown fixture: spawns a grandchild process and blocks forever.')]
 final class RunSpawnChildCommand extends Command
 {
     protected function execute(InputInterface $input, OutputInterface $output): int
