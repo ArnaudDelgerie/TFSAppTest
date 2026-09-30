@@ -13,6 +13,10 @@
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 
+# Auto-generated on every Flex recipe run; tracking it left the tree dirty
+# after each `composer install`.
+/config/reference.php
+
 # Built AppImages (CONTRACT.md §6) — belongs to this project but is a build
 # artifact, not source.
 /tfsapp_build/
