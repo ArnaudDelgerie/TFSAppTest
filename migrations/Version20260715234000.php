@@ -11,7 +11,7 @@ final class Version20260715234000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Create app_gadget table (plan 020 pre-update failure validation)';
+        return 'Create app_gadget table (pre-update failure validation)';
     }
 
     public function up(Schema $schema): void

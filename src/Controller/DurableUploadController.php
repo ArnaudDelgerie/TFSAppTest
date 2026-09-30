@@ -12,13 +12,14 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 
 /**
- * Fixture for the hub's plan 049 end-to-end validation: a file written here
+ * Fixture for the durable-upload check (release checklist F5, CONTRACT.md
+ * §3/§5): a file written here
  * lands under APP_UPLOAD_DIR rather than anywhere under public/, so it is
  * expected to survive an update, a rollback, and an export/import round
- * trip (decision 006). Hand-written and deliberately crude on purpose — no
- * path-confining store, no hardened response class, both are TFSAppBundle's
- * own later plan — this controller is expected to be rewritten onto that
- * service once it exists.
+ * trip. Hand-written and deliberately crude on purpose — no
+ * path-confining store, no hardened response class — kept this way rather
+ * than moved onto the bundle's upload storage, so the probe stays
+ * independent of the code under test.
  */
 final class DurableUploadController extends AbstractController
 {

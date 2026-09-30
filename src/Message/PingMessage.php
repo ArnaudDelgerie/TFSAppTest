@@ -3,7 +3,7 @@
 namespace App\Message;
 
 /**
- * Demo message for the async-worker/Mercure validation (plan 028): dispatched
+ * Demo message for the async-worker/Mercure validation: dispatched
  * by TFSAppController::ping(), handled by PingMessageHandler. Carries a
  * correlation id so the browser can tell its own dispatch apart from another
  * one on the same shared Mercure topic.

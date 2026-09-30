@@ -10,13 +10,14 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 
 /**
- * Fixture for the hub's plan 055 end-to-end validation: two independent
+ * Fixture for the close-guard checks (release checklist F9, CONTRACT.md §7):
+ * two independent
  * simulated background jobs whose guards go through the loopback bridge,
  * exactly the way a real worker's register-before-work / remove-in-finally
  * pair would (see the hub contract's close_guard section). The jobs are
  * fakes on purpose — the guard lifetime is the thing under test, not the
  * work. Crude on purpose, like DurableUploadController and SavePathController;
- * since bundle plan 017 the bridge calls themselves go through the
+ * the bridge calls themselves go through the
  * bundle's BackendCloseGuardInterface, not hand-written HTTP.
  *
  * Two jobs, two stable IDs, one route pair: `export` and `mail` are distinct

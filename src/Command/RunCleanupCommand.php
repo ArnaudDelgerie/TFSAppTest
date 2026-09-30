@@ -10,13 +10,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Fixture for the station's plan 047 ("run" commands) end-to-end
- * validation: a quick, `concurrent: false` (standalone-only) alias —
+ * Fixture for the standalone `run` check (release checklist E1): a quick,
+ * `concurrent: false` (standalone-only) alias —
  * sweeps the markers RunMcpServeCommand leaves in `app_note` and exits
  * immediately, modelling a one-shot maintenance task that must not run
  * while a window (and thus a possibly-concurrent mcp-serve) is live.
  */
-#[AsCommand(name: 'app:run:cleanup', description: 'Plan 047 fixture: a standalone-only command that sweeps mcp-serve markers.')]
+#[AsCommand(name: 'app:run:cleanup', description: 'Standalone `run` fixture: sweeps the mcp-serve markers.')]
 final class RunCleanupCommand extends Command
 {
     public function __construct(private readonly Connection $connection)

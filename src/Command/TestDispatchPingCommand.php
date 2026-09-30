@@ -14,14 +14,15 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 
 /**
- * Fixture for the hub's plan 045 end-to-end validation: dispatches a
+ * Fixture for the declared workers' priority ordering (CONTRACT.md §2:
+ * a transport list's order is its priority): dispatches a
  * PingMessage onto an explicitly named transport, overriding
  * messenger.yaml's routing via TransportNamesStamp. Lets the priority
  * ordering claim ("a message dispatched to the first transport handled
  * before one already waiting in the last") be demonstrated from the CLI,
  * without adding a routing rule per transport.
  */
-#[AsCommand(name: 'app:test:dispatch-ping', description: 'Plan 045 fixture: dispatch a PingMessage onto a named transport.')]
+#[AsCommand(name: 'app:test:dispatch-ping', description: 'Dispatch a PingMessage onto a named transport.')]
 final class TestDispatchPingCommand extends Command
 {
     public function __construct(private readonly MessageBusInterface $bus)

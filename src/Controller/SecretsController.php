@@ -10,9 +10,10 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Fixture for station plan 029: round-trips actions.secrets through the
- * loopback HTTP bridge, exercising the exact transport a future
- * TFSAppBundle client would use (see CONTRACT.md's bridge wire contract).
+ * Fixture for the `actions.secrets` bridge (CONTRACT.md §7): round-trips
+ * the secret store through the
+ * loopback HTTP bridge, exercising the exact transport the TFSAppBundle
+ * client uses (the bundle's bridge wire contract).
  * The WebView side of the same demo (Tauri's own invoke()) lives entirely
  * in index.html.twig/JS — this controller never touches that path.
  */

@@ -8,9 +8,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Fixture for station plan 035: round-trips actions.update through the
- * loopback HTTP bridge, exercising the exact transport a future
- * TFSAppBundle client would use (see CONTRACT.md's bridge wire contract).
+ * Fixture for the `actions.update` bridge (CONTRACT.md §7): round-trips
+ * the update check through the
+ * loopback HTTP bridge, exercising the exact transport the TFSAppBundle
+ * client uses (the bundle's bridge wire contract).
  * The WebView side of the same demo (Tauri's own invoke()) lives entirely
  * in index.html.twig/JS — this controller never touches that path. No CSRF
  * token here, unlike SecretsController::bridge — this route only ever

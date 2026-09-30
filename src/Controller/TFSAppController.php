@@ -17,24 +17,24 @@ final class TFSAppController extends AbstractController
     #[Route('/', name: 'tfs_app')]
     public function index(Request $request, Authorization $authorization): Response
     {
-        // The hub no longer accepts anonymous subscriptions (station plan
-        // 033): mint a same-origin mercureAuthorization cookie scoped to
+        // The hub accepts no anonymous Mercure subscriptions (CONTRACT.md §4):
+        // mint a same-origin mercureAuthorization cookie scoped to
         // the demo topic on every page load, or the EventSource below gets
         // a 401 on subscribe.
         $authorization->setCookie($request, [PingMessage::TOPIC]);
 
         $response = $this->render('index.html.twig', [
             // Lets a tester see which mode the running instance is in
-            // without guessing from dispatch timing alone (plan 028,
-            // CONTRACT.md §3's TFS_ASYNC_WORKER).
+            // without guessing from dispatch timing alone
+            // (CONTRACT.md §3's TFS_ASYNC_WORKER).
             'async_worker_mode' => ($_SERVER['TFS_ASYNC_WORKER'] ?? getenv('TFS_ASYNC_WORKER')) === '1',
             'mercure_public_url' => $_SERVER['MERCURE_PUBLIC_URL'] ?? getenv('MERCURE_PUBLIC_URL') ?: null,
             'ping_topic' => PingMessage::TOPIC,
-            // Reported, not assumed (hub plan 050, CONTRACT.md §3): whether
+            // Reported, not assumed (CONTRACT.md §3): whether
             // this launch actually granted the microphone, never whether the
             // manifest merely asked for it.
             'media_microphone' => ($_SERVER['TFS_MEDIA_MICROPHONE'] ?? getenv('TFS_MEDIA_MICROPHONE')) === '1',
-            // Declared in tfsapp.config.json (hub plan 059, CONTRACT.md §3/§7):
+            // Declared in tfsapp.config.json (CONTRACT.md §3/§7):
             // downloads and pictures should resolve, music is left undeclared
             // on purpose to prove its variable stays absent.
             'user_downloads_dir' => $_SERVER['TFS_USER_DOWNLOADS_DIR'] ?? getenv('TFS_USER_DOWNLOADS_DIR') ?: null,
@@ -89,7 +89,7 @@ final class TFSAppController extends AbstractController
     }
 
     /**
-     * Fixture for the station's plan 059 validation: reports back the
+     * Upload probe: reports back the
      * filename and byte size Symfony actually received, so a manual tester
      * dragging a file from the file manager (or picking one through the
      * WebKit file chooser) can see whether the upload really went through.
@@ -110,10 +110,10 @@ final class TFSAppController extends AbstractController
     }
 
     /**
-     * Fixture for the station's plan 034 step 3: the station's default
-     * Content-Security-Policy is set with Caddy's `?` form (build/Caddyfile.desktop),
-     * which only sets a header the response doesn't already carry. This route
-     * emits its own, deliberately different policy to confirm the station's
+     * Fixture for the CSP override rule (CONTRACT.md §4): the host's
+     * default Content-Security-Policy is only applied to a response that
+     * doesn't already carry one. This route
+     * emits its own, deliberately different policy to confirm the host's
      * default steps aside instead of appearing alongside it.
      */
     #[Route('/csp-override-demo', name: 'csp_override_demo')]
