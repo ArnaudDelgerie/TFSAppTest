@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2
+
+Validation entry for the new-user path — installed from GitHub by a hub
+downloaded from its own release, then updated from 0.7.1 to this release
+with `tfsapp-hub update`: the line under the home page's title should
+appear.
+
 ## 0.7.1
 
 Validation entry for the microphone indicator and local revocation checks —
