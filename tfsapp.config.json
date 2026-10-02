@@ -2,7 +2,7 @@
   "product_name": "TFS App Test",
   "identifier": "io.github.arnauddelgerie.tfsapp-test",
   "project_name": "tfsapp-test",
-  "app_version": "0.7.1",
+  "app_version": "0.7.2",
   "file_associations": { "mime_types": ["text/markdown", "inode/directory"] },
   "workers": [
     { "transports": ["courant", "planifie", "fond"] },
