@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "22173f78ea7390b05b8608b156dc5455",
+    "content-hash": "c1c7f93d4d8e39ffaa13fb9235e36f39",
     "packages": [
         {
             "name": "arnauddelgerie/tfs-app-bundle",
-            "version": "v0.1.0",
+            "version": "v0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ArnaudDelgerie/TFSAppBundle",
-                "reference": "c4167854050c64b6eefb05d645c2cba118446292"
+                "reference": "ced289a47a2c5112a9973f6659d30d8e17a790dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ArnaudDelgerie/TFSAppBundle/zipball/c4167854050c64b6eefb05d645c2cba118446292",
-                "reference": "c4167854050c64b6eefb05d645c2cba118446292",
+                "url": "https://api.github.com/repos/ArnaudDelgerie/TFSAppBundle/zipball/ced289a47a2c5112a9973f6659d30d8e17a790dc",
+                "reference": "ced289a47a2c5112a9973f6659d30d8e17a790dc",
                 "shasum": ""
             },
             "require": {
@@ -68,7 +68,7 @@
                 "issues": "https://github.com/ArnaudDelgerie/TFSAppBundle/issues",
                 "source": "https://github.com/ArnaudDelgerie/TFSAppBundle"
             },
-            "time": "2026-09-30T16:33:33+00:00"
+            "time": "2026-10-02T07:43:06+00:00"
         },
         {
             "name": "doctrine/collections",

@@ -80,7 +80,7 @@ host's teardown reaches the whole descendant tree.
 The bundle is required from Packagist, like in any app:
 
 ```json
-"arnauddelgerie/tfs-app-bundle": "^0.1"
+"arnauddelgerie/tfs-app-bundle": "^0.2"
 ```
 
 It has to be: `tfsapp-hub install` runs Composer **inside the installed copy**,
